@@ -3,6 +3,7 @@
 fs = require 'fs'
 fm = require 'front-matter'
 jade = require 'jade'
+_ = require 'lodash'
 
 module.exports = (env, callback) ->
   class JadePage extends env.plugins.Page
@@ -23,6 +24,7 @@ module.exports = (env, callback) ->
       unless error
         try
           content = fm(result.toString())
+          _.extend locals, content.attributes
           rendered = jade.compile(content.body, config)(locals)
           console.log rendered
           plugin = new JadePage filepath, rendered, content.attributes
