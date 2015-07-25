@@ -24,6 +24,8 @@
   "dependencies": {
     "async": "^0.9.0",
     "coffee-script": "^1.9.1",
-    "jade": "~1.9.2"
+    "front-matter": "^1.0.0",
+    "jade": "~1.9.2",
+    "marked": "^0.3.3"
   }
 }

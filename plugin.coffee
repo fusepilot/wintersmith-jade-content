@@ -1,44 +1,35 @@
-async = require 'async'
-jade = require 'jade'
+
+
 fs = require 'fs'
-path = require 'path'
-url = require 'url'
+fm = require 'front-matter'
+jade = require 'jade'
 
 module.exports = (env, callback) ->
-	class JadePage extends env.plugins.Page
-
-    constructor: (@filepath, @metadata, @markdown) ->
-      console.log "JadePage"
+  class JadePage extends env.plugins.Page
+    constructor: (@filepath, @rendered, @metadata) ->
 
     getLocation: (base) ->
       uri = @getUrl base
       return uri[0..uri.lastIndexOf('/')]
 
     getHtml: (base=env.config.baseUrl) ->
-      ### parse @markdown and return html. also resolves any relative urls to absolute ones ###
-      # options = env.config.markdown or {}
-      # return parseMarkdownSync this, @markdown, @getLocation(base), options
-
-      # try
-      #   callback null, new Buffer @fn(locals)
-      # catch error
-      #   callback error
-      return "<h1>JADE CONTENT</h1>"
+      @rendered
 
   JadePage.fromFile = (filepath, callback) ->
-    async.waterfall [
-      (callback) ->
-        fs.readFile filepath.full, callback
-        new Buffer(".fake")
-      (buffer, callback) =>
-        conf = env.config.jade or {}
-        conf.filename = filepath.full
+    config = env.config.jade or {}
+    config.filename = filepath.full
+    locals = {}
+    fs.readFile filepath.full, (error, result) ->
+      unless error
         try
-          rv = jade.compile buffer.toString(), conf
-          callback null, new this rv
+          content = fm(result.toString())
+          rendered = jade.compile(content.body, config)(locals)
+          console.log rendered
+          plugin = new JadePage filepath, rendered, content.attributes
+          callback null, plugin
         catch error
           callback error
-    ], callback
 
-  env.registerContentPlugin 'pages', '**/*.jade', JadePage
+  env.registerContentPlugin 'text', '**/*.*(jade)', JadePage
+
   callback()
