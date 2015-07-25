@@ -26,7 +26,6 @@ module.exports = (env, callback) ->
           content = fm(result.toString())
           _.extend locals, content.attributes
           rendered = jade.compile(content.body, config)(locals)
-          console.log rendered
           plugin = new JadePage filepath, rendered, content.attributes
           callback null, plugin
         catch error
